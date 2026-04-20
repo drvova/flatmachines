@@ -3,8 +3,6 @@ FlatMachine - State machine orchestration for agents.
 
 A machine defines how agents are connected and executed:
 states, transitions, conditions, and loops.
-
-See local/flatmachines-plan.md for the full specification.
 """
 
 import asyncio
@@ -120,24 +118,6 @@ class FlatMachine:
     ):
         """
         Initialize the machine.
-
-        Args:
-            config_file: Path to YAML/JSON config file
-            config_dict: Configuration dictionary
-            hooks: Custom hooks for extensibility (bypasses registry)
-            hooks_registry: Registry for resolving hooks by name from config
-            persistence: Storage backend (overrides config)
-            lock: Concurrency lock (overrides config)
-            invoker: Strategy for invoking other machines
-            result_backend: Backend for inter-machine result storage
-            signal_backend: Signal storage for wait_for states (optional)
-            trigger_backend: Trigger activation after signals (optional)
-            agent_registry: Registry of agent adapters (optional)
-            agent_adapters: List of agent adapters to register (optional)
-            profiles_file: Optional profiles.yml path for adapters that use it
-            tool_provider: Default ToolProvider for tool_loop states (optional)
-            config_store: Content-addressed config store for cross-SDK resume (optional)
-            **kwargs: Override config values
         """
         if Template is None:
             raise ImportError("jinja2 is required. Install with: pip install jinja2")
