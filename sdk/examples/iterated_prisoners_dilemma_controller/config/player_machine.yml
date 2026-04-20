@@ -1,0 +1,79 @@
+spec: flatmachine
+spec_version: "2.0.0"
+
+data:
+  name: ipd-player
+
+  hooks: ipd-hooks
+
+  context:
+    role: input.role
+    round: input.round
+    rounds_total: input.rounds_total
+    own_history: input.own_history
+    opponent_history: input.opponent_history
+    opponent_last_move: input.opponent_last_move
+    decision_raw: null
+    next_state: null
+    move: null
+    move_label: null
+    rationale: null
+
+  agents:
+    decider: ./agent.yml
+
+  states:
+    start:
+      type: initial
+      transitions:
+        - to: llm_decision
+
+    llm_decision:
+      agent: decider
+      input:
+        role: context.role
+        round: context.round
+        rounds_total: context.rounds_total
+        own_history: context.own_history
+        opponent_history: context.opponent_history
+        opponent_last_move: context.opponent_last_move
+      output_to_context:
+        decision_raw: |-
+          {%- if output.content is defined and output.content -%}
+          {{ output.content }}
+          {%- elif output.response is defined and output.response -%}
+          {{ output.response }}
+          {%- else -%}
+          {{ output }}
+          {%- endif -%}
+      transitions:
+        - to: route_decision
+
+    route_decision:
+      action: route_decision
+      transitions:
+        - condition: "context.next_state == 'cooperate'"
+          to: cooperate
+        - condition: "context.next_state == 'defect'"
+          to: defect
+        - to: cooperate
+
+    cooperate:
+      action: choose_cooperate
+      transitions:
+        - to: done
+
+    defect:
+      action: choose_defect
+      transitions:
+        - to: done
+
+    done:
+      type: final
+      output:
+        role: context.role
+        round: context.round
+        move: context.move
+        move_label: context.move_label
+        rationale: context.rationale
+        decision_raw: context.decision_raw
