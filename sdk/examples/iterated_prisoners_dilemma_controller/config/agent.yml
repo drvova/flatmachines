@@ -17,8 +17,14 @@ data:
     Deterministic game. No noise. Fixed horizon: 10 rounds.
 
     Output contract:
-    - Respond with EXACTLY one word: COOPERATE or DEFECT
-    - No punctuation, no extra text
+    - Allowed values: cooperate or defect
+    - Respond with exactly one value, other responses are rejected
+    - Use lowercase only
+    - No punctuation
+    - No explanation
+    - No extra text
+
+    If uncertain, still respond with only one of the allowed values only.
 
   user: |
     Role: {{ input.role }}

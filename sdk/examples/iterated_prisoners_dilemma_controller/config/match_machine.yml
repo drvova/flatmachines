@@ -3,7 +3,7 @@ spec_version: 2.0.0
 data:
   name: ipd-match
   context:
-    rounds_total: input.rounds_total
+    rounds_total: '{{ input.rounds_total | default(10) }}'
     round: 1
     done: false
     moves_a: []
@@ -18,6 +18,12 @@ data:
     defection_count:
       A: 0
       B: 0
+    cooperation_rate:
+      A: 0.0
+      B: 0.0
+    defection_rate:
+      A: 0.0
+      B: 0.0
     last_round: null
     last_move_a: null
     last_move_b: null
@@ -27,10 +33,8 @@ data:
   states:
     start:
       type: initial
-      action: init_match
       transitions:
       - to: play_round
-      hooks: ipd-match-hooks
     play_round:
       machine:
       - name: player_a
@@ -56,7 +60,6 @@ data:
         decision_raw_b: output.player_b.decision_raw
       transitions:
       - to: score_round
-      hooks: ipd-match-hooks
     score_round:
       action: score_round
       transitions:
@@ -76,4 +79,3 @@ data:
         defection_count: context.defection_count
         cooperation_rate: context.cooperation_rate
         defection_rate: context.defection_rate
-      hooks: ipd-match-hooks

@@ -5,16 +5,15 @@ Two identical LLM-driven player machines play a deterministic **10-round Iterate
 - Shared `config/agent.yml` for both players
 - Each player machine routes through:
   - `llm_decision` (agent)
-  - `cooperate` (programmatic action)
-  - `defect` (programmatic action)
-- Routing uses the recommended pattern: action writes `context.next_state`, transitions read it.
+  - `cooperate` (final output state)
+  - `defect` (final output state)
+- Player routing is now YAML-native: the agent must emit the exact token `cooperate` or `defect`, and transitions branch directly on that value.
 - Per-round decisions are executed in parallel via per-machine entries:
   `machine: [{name: player_a, input: ...}, {name: player_b, input: ...}]`
   so both players act from the same prior-round information set.
-- Hooks are intentionally split by machine responsibility:
-  - player machine: `ipd-player-hooks`
-  - match machine: `ipd-match-hooks`
-  (implemented as separate classes in one `python/src/ipd_controller/hooks.py` file)
+- Player-machine behavior is encoded directly in `config/player_machine.yml`.
+- Match setup is also YAML-native via initial context values.
+- The only remaining hook-backed match semantic is round scoring/accumulation via `ipd-match-hooks` on `score_round`.
 
 ## Model setup
 This example uses the OpenAI Codex OAuth profile setup from:

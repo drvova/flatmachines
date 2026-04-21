@@ -7,7 +7,7 @@ from pathlib import Path
 
 from flatmachines import FlatMachine, HooksRegistry, get_logger, setup_logging
 
-from .hooks import IPDMatchHooks, IPDPlayerHooks
+from .hooks import IPDMatchHooks
 
 setup_logging(level=os.getenv("FLATAGENTS_LOG_LEVEL", "INFO"))
 logger = get_logger(__name__)
@@ -49,7 +49,6 @@ def _print_summary(result: dict, show_raw: bool = False) -> None:
 
 async def run(rounds: int = 10, debug_messages: bool = False) -> dict:
     registry = HooksRegistry()
-    registry.register("ipd-player-hooks", lambda: IPDPlayerHooks(debug_messages=debug_messages))
     registry.register("ipd-match-hooks", IPDMatchHooks)
 
     machine = FlatMachine(
