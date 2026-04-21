@@ -136,6 +136,7 @@ Usage/cost metrics from `AgentResult` are accumulated into `FlatMachine.total_ap
 
 - `machine: child` → invoke peer machine and block.
 - `machine: [a, b, c]` → parallel invoke; `mode: settled | any`.
+- `machine: [{name: a, input: {...}}, {name: b, input: {...}}]` → parallel invoke with per-machine input overrides (entry input overrides state-level `input`).
 - `foreach: "{{ context.items }}"` → dynamic parallelism.
 - `launch: child` → fire‑and‑forget launch; result written to backend.
 

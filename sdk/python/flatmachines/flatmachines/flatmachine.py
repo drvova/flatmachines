@@ -1003,20 +1003,34 @@ class FlatMachine:
         machines: list[str],
         input_data: Dict[str, Any],
         mode: str = "settled",
-        timeout: Optional[float] = None
+        timeout: Optional[float] = None,
+        per_machine_inputs: Optional[Dict[str, Dict[str, Any]]] = None,
     ) -> Dict[str, Any]:
-        """Invoke multiple machines in parallel."""
+        """Invoke multiple machines in parallel.
+
+        ``input_data`` is the shared base input for all machines. When
+        ``per_machine_inputs`` is provided, entries override the base input for
+        matching machine names.
+        """
         child_ids = {m: str(uuid.uuid4()) for m in machines}
+
+        # Resolve per-machine input payloads upfront (base input + overrides)
+        launch_inputs: Dict[str, Dict[str, Any]] = {}
+        for machine_name in child_ids.keys():
+            if per_machine_inputs and machine_name in per_machine_inputs:
+                launch_inputs[machine_name] = dict(per_machine_inputs[machine_name])
+            else:
+                launch_inputs[machine_name] = dict(input_data)
 
         # Checkpoint all intents
         for machine_name, child_id in child_ids.items():
-            self._add_pending_launch(child_id, machine_name, input_data)
+            self._add_pending_launch(child_id, machine_name, launch_inputs[machine_name])
 
         # Launch all
         tasks = {}
         for machine_name, child_id in child_ids.items():
             task = asyncio.create_task(
-                self._launch_and_write(machine_name, child_id, input_data)
+                self._launch_and_write(machine_name, child_id, launch_inputs[machine_name])
             )
             tasks[machine_name] = task
 
@@ -1306,16 +1320,38 @@ class FlatMachine:
                 # Parallel execution: machine: [a, b, c]
                 machine_input = self._render_dict(input_spec, variables)
 
-                # Handle MachineInput objects (with per-machine inputs)
+                # MachineInput objects support per-machine input overrides:
+                # machine: [{name: a, input: {...}}, ...]
                 if machine_spec and isinstance(machine_spec[0], dict):
-                    # machine: [{name: a, input: {...}}, ...]
-                    machine_names = [m['name'] for m in machine_spec]
-                    # TODO: Support per-machine inputs
+                    machine_names = []
+                    per_machine_inputs: Dict[str, Dict[str, Any]] = {}
+                    for machine_entry in machine_spec:
+                        if not isinstance(machine_entry, dict):
+                            raise ValueError("Mixed machine list entries are not supported. Use all strings or all objects with {name, input?}.")
+
+                        machine_name = machine_entry.get('name')
+                        if not machine_name:
+                            raise ValueError("MachineInput entry missing required 'name' field")
+
+                        machine_names.append(machine_name)
+
+                        entry_input_spec = machine_entry.get('input', {})
+                        if entry_input_spec is None:
+                            entry_input_spec = {}
+                        if not isinstance(entry_input_spec, dict):
+                            raise ValueError(
+                                f"MachineInput entry '{machine_name}' has invalid 'input' type: {type(entry_input_spec)}. Expected dict."
+                            )
+
+                        entry_input = self._render_dict(entry_input_spec, variables)
+                        per_machine_inputs[machine_name] = {**machine_input, **entry_input}
+
                     output = await self._invoke_machines_parallel(
                         machines=machine_names,
                         input_data=machine_input,
                         mode=mode,
-                        timeout=timeout
+                        timeout=timeout,
+                        per_machine_inputs=per_machine_inputs,
                     )
                 else:
                     # machine: [a, b, c]

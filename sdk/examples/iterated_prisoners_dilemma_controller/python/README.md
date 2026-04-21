@@ -6,7 +6,8 @@ Hook separation in this example:
 - `IPDPlayerHooks` for player-machine actions/debug
 - `IPDMatchHooks` for match-machine scoring/setup
 
-Round execution is parallel at the match level (`machine: [player_a_turn, player_b_turn]`).
+Round execution is parallel at the match level using per-machine inputs:
+`machine: [{name: player_a, input: ...}, {name: player_b, input: ...}]`.
 
 ## Run
 ```bash

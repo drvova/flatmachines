@@ -27,8 +27,8 @@ data:
     last_move_b: null
 
   machines:
-    player_a_turn: ./player_a_turn_machine.yml
-    player_b_turn: ./player_b_turn_machine.yml
+    player_a: ./player_machine.yml
+    player_b: ./player_machine.yml
 
   states:
     start:
@@ -38,20 +38,28 @@ data:
         - to: play_round
 
     play_round:
-      machine: [player_a_turn, player_b_turn]
+      machine:
+        - name: player_a
+          input:
+            role: Player A
+            own_history: context.moves_a
+            opponent_history: context.moves_b
+            opponent_last_move: context.last_move_b
+        - name: player_b
+          input:
+            role: Player B
+            own_history: context.moves_b
+            opponent_history: context.moves_a
+            opponent_last_move: context.last_move_a
       mode: settled
       input:
         round: context.round
         rounds_total: context.rounds_total
-        moves_a: context.moves_a
-        moves_b: context.moves_b
-        last_move_a: context.last_move_a
-        last_move_b: context.last_move_b
       output_to_context:
-        move_a: output.player_a_turn.move
-        decision_raw_a: output.player_a_turn.decision_raw
-        move_b: output.player_b_turn.move
-        decision_raw_b: output.player_b_turn.decision_raw
+        move_a: output.player_a.move
+        decision_raw_a: output.player_a.decision_raw
+        move_b: output.player_b.move
+        decision_raw_b: output.player_b.decision_raw
       transitions:
         - to: score_round
 
