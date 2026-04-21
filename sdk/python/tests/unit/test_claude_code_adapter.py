@@ -164,10 +164,13 @@ class TestBuildArgs:
         assert "--append-system-prompt" not in args
 
     def test_tools_exact_whitelist(self):
-        executor = _make_executor({"tools": ["Bash", "Read", "Write"]})
+        executor = _make_executor({"tools": ["Bash", "Read", "Write", "Edit"]})
         args = executor._build_args("task", "s1", resume=False)
         idx = args.index("--tools")
-        assert args[idx + 1:idx + 4] == ["Bash", "Read", "Write"]
+        assert args[idx + 1:idx + 5] == ["Bash", "Read", "Write", "Edit"]
+        assert "LSP" not in args[idx + 1:idx + 5]
+        disallowed_idx = args.index("--disallowed-tools")
+        assert args[disallowed_idx + 1] == "LSP"
 
     def test_budget_disabled_by_default(self):
         executor = _make_executor()

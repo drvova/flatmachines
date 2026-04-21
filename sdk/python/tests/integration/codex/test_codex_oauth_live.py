@@ -148,7 +148,7 @@ async def test_codex_oauth_cache_continuity_across_post_tool_and_followup() -> N
     r1 = await agent.call(
         prompt=(
             "Acknowledge in one short sentence and wait for follow-up. "
-            "Do not call any tools. "
+            "Do not call any tools this turn. "
             f"CONTEXT_START {long_seed} CONTEXT_END"
         ),
         tools=session_tools,

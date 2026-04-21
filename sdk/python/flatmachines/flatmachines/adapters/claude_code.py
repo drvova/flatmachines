@@ -18,6 +18,7 @@ Config keys (agent config or global settings.agent_runners.claude_code):
   system_prompt       Replace default system prompt entirely
   append_system_prompt  Append to default system prompt (preferred)
   tools               List of exact tool names (e.g. ["Bash", "Read", "Edit"])
+                      When set, the adapter also blacklists LSP.
   max_budget_usd      Cost cap for the session (0 = disabled)
   add_dirs            List of additional directories for tool access
   claude_bin          Path to claude binary (default: "claude")
@@ -815,10 +816,13 @@ class ClaudeCodeExecutor(AgentExecutor):
         elif append_system_prompt:
             args += ["--append-system-prompt", append_system_prompt]
 
-        # Tool control (exact whitelist)
+        # Tool control (exact whitelist). Claude Code 2.1.78 may still surface
+        # LSP in the init event, so explicitly blacklist it whenever tools are
+        # constrained.
         tools = cfg.get("tools")
         if tools:
             args += ["--tools"] + list(tools)
+            args += ["--disallowed-tools", "LSP"]
 
         # MCP server configuration
         mcp_config = cfg.get("mcp_config")
