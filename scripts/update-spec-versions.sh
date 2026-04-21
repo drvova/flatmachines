@@ -73,6 +73,8 @@ if [[ -z "$NEW_VERSION" ]]; then
     echo ""
     echo "What gets updated:"
     echo "  Always:     Root .d.ts specs, README.md, AGENTS.md"
+    echo "              Sync root AGENTS.md -> sdk/python/{flatagents,flatmachines}/AGENTS.md"
+    echo "              Remove sdk/python/{flatagents,flatmachines}/MACHINES.md"
     echo "  --python:   sdk/python/flatagents/pyproject.toml, sdk/python/flatmachines/pyproject.toml"
     echo "              sdk/python/flatagents/flatagents/__init__.py"
     echo "              sdk/python/flatmachines/flatmachines/__init__.py"
@@ -131,6 +133,41 @@ update_file() {
     fi
 }
 
+sync_file() {
+    local src="$1"
+    local dst="$2"
+
+    [[ -f "$src" ]] || return
+
+    if [[ -f "$dst" ]] && cmp -s "$src" "$dst"; then
+        return
+    fi
+
+    if [[ "$DRY_RUN" == true ]]; then
+        echo "  Would sync: $dst"
+        ((++WOULD_UPDATE))
+    else
+        cp "$src" "$dst"
+        echo "  Synced: $dst"
+        ((++UPDATED))
+    fi
+}
+
+remove_file_if_exists() {
+    local file="$1"
+
+    [[ -e "$file" || -L "$file" ]] || return
+
+    if [[ "$DRY_RUN" == true ]]; then
+        echo "  Would remove: $file"
+        ((++WOULD_UPDATE))
+    else
+        rm -f "$file"
+        echo "  Removed: $file"
+        ((++UPDATED))
+    fi
+}
+
 # Update yml files in a directory that have outdated spec_version
 update_yml_files() {
     local search_path="$1"
@@ -165,7 +202,22 @@ done
 echo ""
 
 # =============================================================================
-# 3. PYTHON SDK (if --python)
+# 3. SDK DOC SYNC (always)
+# =============================================================================
+echo "SDK docs:"
+
+# Keep Python SDK agent docs in lockstep with root reference
+sync_file "AGENTS.md" "sdk/python/flatagents/AGENTS.md"
+sync_file "AGENTS.md" "sdk/python/flatmachines/AGENTS.md"
+
+# Remove deprecated duplicate docs
+remove_file_if_exists "sdk/python/flatagents/MACHINES.md"
+remove_file_if_exists "sdk/python/flatmachines/MACHINES.md"
+
+echo ""
+
+# =============================================================================
+# 4. PYTHON SDK (if --python)
 # =============================================================================
 if [[ "$UPDATE_PYTHON" == true ]]; then
     echo "Python SDK:"
@@ -181,7 +233,7 @@ if [[ "$UPDATE_PYTHON" == true ]]; then
 fi
 
 # =============================================================================
-# 4. JAVASCRIPT SDK (if --js)
+# 5. JAVASCRIPT SDK (if --js)
 # =============================================================================
 if [[ "$UPDATE_JS" == true ]]; then
     echo "JavaScript SDK:"
@@ -199,7 +251,7 @@ if [[ "$UPDATE_JS" == true ]]; then
 fi
 
 # =============================================================================
-# 5. SHARED EXAMPLES (if --examples)
+# 6. SHARED EXAMPLES (if --examples)
 # =============================================================================
 if [[ "$UPDATE_EXAMPLES" == true ]]; then
     echo "Shared examples (sdk/examples/**/*.yml):"

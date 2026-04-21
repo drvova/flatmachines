@@ -79,7 +79,7 @@
         "persistence": {
           "$ref": "#/definitions/PersistenceConfig"
         },
-        "hooks": {
+        "lifecycle_hooks": {
           "$ref": "#/definitions/HooksRef"
         }
       },
@@ -525,6 +525,28 @@
     "StateDefinition": {
       "type": "object",
       "properties": {
+        "on_error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "timeout": {
+          "type": "number"
+        },
+        "transitions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Transition"
+          }
+        },
         "type": {
           "type": "string",
           "enum": [
@@ -532,7 +554,45 @@
             "final"
           ]
         },
+        "input": {
+          "type": "object"
+        },
+        "output": {
+          "type": "object"
+        },
+        "output_to_context": {
+          "type": "object"
+        },
         "agent": {
+          "type": "string"
+        },
+        "execution": {
+          "$ref": "#/definitions/ExecutionConfig"
+        },
+        "sampling": {
+          "type": "string",
+          "enum": [
+            "single",
+            "multi"
+          ]
+        },
+        "tool_loop": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/definitions/ToolLoopStateConfig"
+            }
+          ]
+        },
+        "as": {
+          "type": "string"
+        },
+        "foreach": {
+          "type": "string"
+        },
+        "key": {
           "type": "string"
         },
         "machine": {
@@ -554,69 +614,6 @@
             }
           ]
         },
-        "action": {
-          "type": "string"
-        },
-        "execution": {
-          "$ref": "#/definitions/ExecutionConfig"
-        },
-        "on_error": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "object",
-              "additionalProperties": {
-                "type": "string"
-              }
-            }
-          ]
-        },
-        "wait_for": {
-          "type": "string"
-        },
-        "input": {
-          "type": "object"
-        },
-        "output_to_context": {
-          "type": "object"
-        },
-        "output": {
-          "type": "object"
-        },
-        "transitions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Transition"
-          }
-        },
-        "tool_loop": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/definitions/ToolLoopStateConfig"
-            }
-          ]
-        },
-        "sampling": {
-          "type": "string",
-          "enum": [
-            "single",
-            "multi"
-          ]
-        },
-        "foreach": {
-          "type": "string"
-        },
-        "as": {
-          "type": "string"
-        },
-        "key": {
-          "type": "string"
-        },
         "mode": {
           "type": "string",
           "enum": [
@@ -624,8 +621,14 @@
             "any"
           ]
         },
-        "timeout": {
-          "type": "number"
+        "action": {
+          "type": "string"
+        },
+        "hooks": {
+          "$ref": "#/definitions/HooksRef"
+        },
+        "wait_for": {
+          "type": "string"
         },
         "launch": {
           "anyOf": [
@@ -646,18 +649,18 @@
       },
       "additionalProperties": false
     },
-    "MachineInput": {
+    "Transition": {
       "type": "object",
       "properties": {
-        "name": {
+        "condition": {
           "type": "string"
         },
-        "input": {
-          "type": "object"
+        "to": {
+          "type": "string"
         }
       },
       "required": [
-        "name"
+        "to"
       ],
       "additionalProperties": false
     },
@@ -697,21 +700,6 @@
       ],
       "additionalProperties": false
     },
-    "Transition": {
-      "type": "object",
-      "properties": {
-        "condition": {
-          "type": "string"
-        },
-        "to": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "to"
-      ],
-      "additionalProperties": false
-    },
     "ToolLoopStateConfig": {
       "type": "object",
       "properties": {
@@ -743,6 +731,59 @@
           "type": "number"
         }
       },
+      "additionalProperties": false
+    },
+    "MachineInput": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "input": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "HooksRef": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/definitions/HooksRefConfig"
+        },
+        {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/definitions/HooksRefConfig"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "HooksRefConfig": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "args": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "name"
+      ],
       "additionalProperties": false
     },
     "MachineSettings": {
@@ -789,44 +830,6 @@
         "enabled",
         "backend"
       ]
-    },
-    "HooksRef": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "$ref": "#/definitions/HooksRefConfig"
-        },
-        {
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "$ref": "#/definitions/HooksRefConfig"
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "HooksRefConfig": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "args": {
-          "type": "object"
-        }
-      },
-      "required": [
-        "name"
-      ],
-      "additionalProperties": false
     }
   }
 }

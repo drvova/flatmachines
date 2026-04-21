@@ -1,4 +1,4 @@
-export const SPEC_VERSION = "2.7.0";
+export const SPEC_VERSION = "3.0.0";
 export interface MachineWrapper {
     spec: "flatmachine";
     spec_version: string;
@@ -26,7 +26,7 @@ export interface MachineData {
     states: Record<string, StateDefinition>;
     settings?: MachineSettings;
     persistence?: PersistenceConfig;
-    hooks?: HooksRef;
+    lifecycle_hooks?: HooksRef;
 }
 export interface AgentRefConfig {
     type: string;
@@ -45,24 +45,25 @@ export interface MachineSettings {
     [key: string]: any;
 }
 export interface StateDefinition {
-    type?: "initial" | "final";
-    agent?: string;
-    machine?: string | string[] | MachineInput[];
-    action?: string;
-    execution?: ExecutionConfig;
     on_error?: string | Record<string, string>;
-    wait_for?: string;
-    input?: Record<string, any>;
-    output_to_context?: Record<string, any>;
-    output?: Record<string, any>;
-    transitions?: Transition[];
-    tool_loop?: boolean | ToolLoopStateConfig;
-    sampling?: "single" | "multi";
-    foreach?: string;
-    as?: string;
-    key?: string;
-    mode?: "settled" | "any";
     timeout?: number;
+    transitions?: Transition[];
+    type?: "initial" | "final";
+    input?: Record<string, any>;
+    output?: Record<string, any>;
+    output_to_context?: Record<string, any>;
+    agent?: string;
+    execution?: ExecutionConfig;
+    sampling?: "single" | "multi";
+    tool_loop?: boolean | ToolLoopStateConfig;
+    as?: string;
+    foreach?: string;
+    key?: string;
+    machine?: string | string[] | MachineInput[];
+    mode?: "settled" | "any";
+    action?: string;
+    hooks?: HooksRef;
+    wait_for?: string;
     launch?: string | string[];
     launch_input?: Record<string, any>;
 }

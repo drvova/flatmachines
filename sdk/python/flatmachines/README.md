@@ -2,7 +2,7 @@
 
 State-machine orchestration for LLM agents. FlatMachines is **agent-framework agnostic** and uses adapters to execute agents from FlatAgents, smolagents, pi-mono, or other runtimes.
 
-**For LLM/machine readers:** see [MACHINES.md](https://github.com/memgrafter/flatagents/blob/main/MACHINES.md).
+**For LLM/machine readers:** see [AGENTS.md](./AGENTS.md).
 
 ## Install
 

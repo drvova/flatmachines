@@ -2,7 +2,7 @@
 
 Define single-call LLM agents in YAML. Use this package when you want **one structured call** per agent, with optional MCP tools and profile-driven model configs. For orchestration, install `flatmachines` separately.
 
-**For LLM/machine readers:** see [MACHINES.md](https://github.com/memgrafter/flatagents/blob/main/MACHINES.md).
+**For LLM/machine readers:** see [AGENTS.md](./AGENTS.md).
 
 ## Install
 
