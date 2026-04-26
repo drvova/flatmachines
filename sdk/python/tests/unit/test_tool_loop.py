@@ -341,6 +341,34 @@ class TestGuardrails:
 
         assert result.stop_reason == StopReason.TIMEOUT
 
+    @pytest.mark.asyncio
+    async def test_zero_guardrails_are_unlimited(self):
+        """0 disables numeric limits: turns, tools, timeout, and cost."""
+        agent = AsyncMock()
+        usage = FakeUsage(cost=FakeCost(total=999.0))
+        resp1 = make_tool_response([{"id": "c1", "name": "test_tool", "arguments": {}}])
+        resp1.usage = usage
+        resp2 = make_response(content="done")
+        resp2.usage = usage
+        agent.call = AsyncMock(side_effect=[resp1, resp2])
+
+        loop = ToolLoopAgent(
+            agent=agent,
+            tools=[make_tool()],
+            guardrails=Guardrails(
+                max_turns=0,
+                max_tool_calls=0,
+                max_cost=0,
+                total_timeout=0,
+                tool_timeout=0,
+            ),
+        )
+        result = await loop.run(task="unlimited")
+
+        assert result.stop_reason == StopReason.COMPLETE
+        assert result.turns == 2
+        assert result.tool_calls_count == 1
+
 
 # ---------------------------------------------------------------------------
 # Tests: Tool Filtering

@@ -55,7 +55,11 @@ class Tool:
 
 @dataclass
 class Guardrails:
-    """Configurable limits for the tool loop."""
+    """Configurable limits for the tool loop.
+
+    Numeric guardrails use 0 to mean unlimited/disabled.
+    max_turns counts LLM calls, not tool calls.
+    """
     max_tool_calls: int = 50
     max_turns: int = 20
     allowed_tools: Optional[List[str]] = None
@@ -228,7 +232,7 @@ class ToolLoopAgent:
         while True:
             # Check total timeout
             elapsed = time.monotonic() - start_time
-            if elapsed >= guardrails.total_timeout:
+            if guardrails.total_timeout > 0 and elapsed >= guardrails.total_timeout:
                 return ToolLoopResult(
                     content=last_content, messages=chain,
                     tool_calls_count=tool_calls_count, turns=turns,
@@ -236,7 +240,7 @@ class ToolLoopAgent:
                 )
 
             # Check max turns
-            if turns >= guardrails.max_turns:
+            if guardrails.max_turns > 0 and turns >= guardrails.max_turns:
                 return ToolLoopResult(
                     content=last_content, messages=chain,
                     tool_calls_count=tool_calls_count, turns=turns,
@@ -244,7 +248,7 @@ class ToolLoopAgent:
                 )
 
             # Check cost limit
-            if guardrails.max_cost is not None and usage.total_cost >= guardrails.max_cost:
+            if guardrails.max_cost is not None and guardrails.max_cost > 0 and usage.total_cost >= guardrails.max_cost:
                 return ToolLoopResult(
                     content=last_content, messages=chain,
                     tool_calls_count=tool_calls_count, turns=turns,
@@ -292,6 +296,7 @@ class ToolLoopAgent:
             if (
                 response.finish_reason == FinishReason.TOOL_USE
                 and guardrails.max_cost is not None
+                and guardrails.max_cost > 0
                 and usage.total_cost >= guardrails.max_cost
             ):
                 return ToolLoopResult(
@@ -312,7 +317,7 @@ class ToolLoopAgent:
 
             # We have tool calls — check guardrails before executing
             pending_calls = response.tool_calls or []
-            if tool_calls_count + len(pending_calls) > guardrails.max_tool_calls:
+            if guardrails.max_tool_calls > 0 and tool_calls_count + len(pending_calls) > guardrails.max_tool_calls:
                 return ToolLoopResult(
                     content=last_content, messages=chain,
                     tool_calls_count=tool_calls_count, turns=turns,
@@ -358,12 +363,13 @@ class ToolLoopAgent:
         if guardrails.allowed_tools and name not in guardrails.allowed_tools:
             return ToolResult(content=f"Tool '{name}' is not allowed", is_error=True)
 
-        # Execute via provider with timeout
+        # Execute via provider with timeout. 0 disables the per-tool timeout.
         try:
-            result = await asyncio.wait_for(
-                self._provider.execute_tool(name, tool_call_id, arguments),
-                timeout=guardrails.tool_timeout,
-            )
+            coroutine = self._provider.execute_tool(name, tool_call_id, arguments)
+            if guardrails.tool_timeout > 0:
+                result = await asyncio.wait_for(coroutine, timeout=guardrails.tool_timeout)
+            else:
+                result = await coroutine
             return result
         except asyncio.TimeoutError:
             return ToolResult(
