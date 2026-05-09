@@ -923,9 +923,12 @@ class FlatAgent:
         input_data: Dict[str, Any],
         tools_prompt: str = "",
         tools: Optional[List[Dict]] = None,
+        context: Optional[Dict[str, Any]] = None,
     ) -> str:
         """
-        Render post-history instructions with the same template context as prompts.
+        Render post-history instructions with the same template context as prompts,
+        plus an additional ``context`` variable for data that persists across turns
+        (e.g. role state maintained by a FlatMachine tool loop).
 
         These instructions are not part of the stored logical conversation. They
         are appended ephemerally to the final submitted user/tool message after
@@ -951,6 +954,7 @@ class FlatAgent:
             tools_prompt=tools_prompt,
             tools=tools or [],
             model=model_config,
+            context=context or {},
         )
 
     def _messages_with_post_history_instructions(
@@ -1252,6 +1256,7 @@ class FlatAgent:
             input_data,
             tools_prompt=tools_prompt,
             tools=_mcp_tools,
+            context=context,
         )
         submit_messages = self._messages_with_post_history_instructions(
             all_messages,
