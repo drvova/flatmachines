@@ -491,7 +491,7 @@ class FlatAgent:
         """Apply resolved llm model config to instance attributes."""
         provider = model_config.get('provider')
         model_name = model_config.get('name')
-        if provider and model_name and '/' not in str(model_name):
+        if provider and model_name and f"{provider}/" not in str(model_name) and f"{provider}:" not in str(model_name):
             full_model_name = f"{provider}/{model_name}"
         else:
             full_model_name = model_name
