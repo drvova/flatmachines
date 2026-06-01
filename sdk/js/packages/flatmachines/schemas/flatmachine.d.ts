@@ -209,6 +209,8 @@ export interface MachineRuntimeMetadata {
   current_state: string;
   total_api_calls: number;
   total_cost: number;
+  /** Current nesting depth (root = 0). */
+  depth?: number;
 }
 
 export interface MachineData {
@@ -245,6 +247,8 @@ export interface HooksRefConfig {
 export interface MachineSettings {
   max_steps?: number;
   parallel_fallback?: "sequential" | "error";
+  /** Maximum nesting depth for machine launches. Prevents runaway recursive launches. */
+  max_depth?: number;
   [key: string]: any;
 }
 
@@ -350,6 +354,7 @@ export interface MachineSnapshot {
     loop_cost: number;
   };
   config_hash?: string;
+  depth?: number;
 }
 
 export interface PersistenceConfig {

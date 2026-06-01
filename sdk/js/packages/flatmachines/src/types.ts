@@ -155,6 +155,8 @@ export interface MachineOptions {
   executionId?: string;
   parentExecutionId?: string;
   profilesFile?: string;
+  /** Nesting depth (root=0). Set automatically by parent when creating child machines. */
+  depth?: number;
 }
 
 export interface MachineInput {

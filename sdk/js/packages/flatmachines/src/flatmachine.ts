@@ -97,6 +97,7 @@ export class FlatMachine {
   private profilesFile?: string;
   private checkpointEvents = new Set<string>();
   private parentExecutionId?: string;
+  private depth: number;
   private pendingLaunches: LaunchIntent[] = [];
   private currentState?: string;
   private currentStep = 0;
@@ -141,6 +142,8 @@ export class FlatMachine {
     }
     this.executionId = options.executionId ?? this.executionId;
     this.parentExecutionId = options.parentExecutionId;
+    // Depth: starts at 0 for root, set by parent for children
+    this.depth = options.depth ?? 0;
 
     const backendConfig = this.config.data.settings?.backends;
     this.resultBackend = options.resultBackend ?? this.createResultBackend(backendConfig);
@@ -301,6 +304,7 @@ export class FlatMachine {
       this.executionId = resumeSnapshot.execution_id;
       this.parentExecutionId = resumeSnapshot.parent_execution_id;
       this.context = resumeSnapshot.context;
+      this.depth = resumeSnapshot.context?.machine?.depth ?? this.depth;
       state = resumeSnapshot.current_state;
       steps = resumeSnapshot.step;
       this.pendingLaunches = resumeSnapshot.pending_launches ?? [];
@@ -321,6 +325,12 @@ export class FlatMachine {
     }
 
     const maxSteps = this.config.data.settings?.max_steps ?? 100;
+    const maxDepth = this.config.data.settings?.max_depth;
+    if (maxDepth !== undefined && this.depth >= maxDepth) {
+      throw new Error(
+        `Machine depth limit exceeded: depth=${this.depth} >= max_depth=${maxDepth}`,
+      );
+    }
 
     while (steps++ < maxSteps) {
       const def = this.config.data.states[state]!;
@@ -439,6 +449,7 @@ export class FlatMachine {
       parentExecutionId: this.parentExecutionId,
       totalApiCalls: this.totalApiCalls,
       totalCost: this.totalCost,
+      depth: this.depth,
     });
   }
 
@@ -1105,6 +1116,7 @@ export class FlatMachine {
       hooksRegistry: this._hooksRegistry,
       executionId: overrides?.executionId,
       parentExecutionId: overrides?.parentExecutionId,
+      depth: this.depth + 1,
       profilesFile: this.profilesFile,
       signalBackend: this.signalBackend,
       triggerBackend: this.triggerBackend,

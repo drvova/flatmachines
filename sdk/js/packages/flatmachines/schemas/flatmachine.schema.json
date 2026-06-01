@@ -114,6 +114,10 @@
         },
         "total_cost": {
           "type": "number"
+        },
+        "depth": {
+          "type": "number",
+          "description": "Current nesting depth (root = 0)."
         }
       },
       "required": [
@@ -1127,6 +1131,10 @@
             "sequential",
             "error"
           ]
+        },
+        "max_depth": {
+          "type": "number",
+          "description": "Maximum nesting depth for machine launches. Prevents runaway recursive launches."
         }
       }
     },

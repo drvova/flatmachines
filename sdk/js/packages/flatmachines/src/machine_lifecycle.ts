@@ -79,6 +79,7 @@ export function injectMachineMetadata(
     parentExecutionId?: string;
     totalApiCalls: number;
     totalCost: number;
+    depth?: number;
   },
 ): void {
   context.machine = Object.freeze({
@@ -90,6 +91,7 @@ export function injectMachineMetadata(
     parent_execution_id: opts.parentExecutionId ?? null,
     total_api_calls: opts.totalApiCalls,
     total_cost: opts.totalCost,
+    depth: opts.depth,
   });
 }
 
