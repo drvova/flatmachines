@@ -30,6 +30,7 @@ Initial global-use tools:
 
 - `flatmachine_validate`: parse YAML or JSON and run `validateFlatMachineConfig`.
 - `flatmachine_run`: validate, instantiate `FlatMachine`, execute with JSON input, and return structured JSON output.
+- `flatmachine_signal`: send signals into FlatMachines signal backends and optionally notify trigger backends.
 
 Default behavior resolves relative paths from the OpenCode worktree and rejects paths outside that worktree. Users can opt into external paths with plugin options.
 

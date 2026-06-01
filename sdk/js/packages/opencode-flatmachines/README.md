@@ -25,6 +25,8 @@ OpenCode installs npm plugins automatically at startup and caches them under `~/
 
 For one project, put the same `plugin` entry in that project's `opencode.json`.
 
+This package includes [`opencode.example.json`](./opencode.example.json), which can be copied into global or project OpenCode config and adjusted for the target machine path.
+
 For unpublished local development, use a local plugin shim:
 
 ```ts
@@ -112,3 +114,5 @@ npm run verify:opencode-plugin
 ```
 
 `verify:opencode-plugin` installs the packed plugin into a clean consumer project and resolves FlatMachines dependencies from npm, matching the global OpenCode npm-plugin path.
+
+The package `prepublishOnly` script runs build, typecheck, and `verify:opencode-plugin` automatically.

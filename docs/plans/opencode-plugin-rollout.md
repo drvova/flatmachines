@@ -26,3 +26,9 @@
 - Add compatibility guidance for OpenCode versions using `engines.opencode`.
 - Keep plugin dependencies on a published-compatible FlatMachines range, then publish lockstep JS packages when new FlatMachines runtime features are required.
 - Submit the plugin to the OpenCode ecosystem list after the package is published and install-verified.
+
+## Slice 5: Post-Listing Hardening
+
+- Add dispatcher/resume tools after OpenCode global install and ecosystem listing are verified.
+- Add a compatibility matrix for OpenCode, Node, FlatMachines, and SQLite signaling.
+- Add live OpenCode CLI verification when a local `opencode` binary is available.

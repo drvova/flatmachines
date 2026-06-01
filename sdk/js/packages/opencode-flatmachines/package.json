@@ -17,18 +17,21 @@
   },
   "files": [
     "dist",
+    "opencode.example.json",
     "README.md"
   ],
   "scripts": {
     "build": "tsup",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build && npm run typecheck && npm --prefix ../.. run verify:opencode-plugin"
   },
   "keywords": [
     "opencode",
     "plugin",
     "flatmachines",
     "orchestration",
-    "agents"
+    "agents",
+    "state-machine"
   ],
   "author": "memgrafter@gmail.com",
   "license": "MIT",

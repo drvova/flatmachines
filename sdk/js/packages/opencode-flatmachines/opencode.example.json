@@ -1,0 +1,13 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    [
+      "@memgrafter/opencode-flatmachines",
+      {
+        "defaultConfigPath": "machine.yml",
+        "profilesFile": "profiles.yml",
+        "allowExternalPaths": false
+      }
+    ]
+  ]
+}
