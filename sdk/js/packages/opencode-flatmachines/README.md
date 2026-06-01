@@ -27,7 +27,17 @@ For one project, put the same `plugin` entry in that project's `opencode.json`.
 
 This package includes [`opencode.example.json`](./opencode.example.json), which can be copied into global or project OpenCode config and adjusted for the target machine path.
 
-For unpublished local development, use a local plugin shim:
+For global use without npm publishing, run the repository setup command:
+
+```sh
+cd sdk/js
+npm run build
+npm run setup:opencode-global-local
+```
+
+It writes a global local plugin shim into `~/.config/opencode/plugins/flatmachines.ts`, adds a local file dependency to `~/.config/opencode/package.json`, and registers `flatmachines.ts` in `~/.config/opencode/opencode.json`.
+
+For manual local development, use the same shim:
 
 ```ts
 // .opencode/plugins/flatmachines.ts
@@ -95,17 +105,9 @@ Then run the waiting machine with:
 }
 ```
 
-## Release Gate
+## Verification Gate
 
-The plugin package intentionally depends on the latest published FlatMachines major range so a global OpenCode install can resolve dependencies from npm without waiting for every workspace package to be published in the same release.
-
-Publish order for a lockstep release remains:
-
-1. `@memgrafter/flatagents`
-2. `@memgrafter/flatmachines`
-3. `@memgrafter/opencode-flatmachines`
-
-Before publishing the plugin, run:
+Before updating global OpenCode config, run:
 
 ```sh
 npm run build
@@ -113,6 +115,4 @@ npm run typecheck
 npm run verify:opencode-plugin
 ```
 
-`verify:opencode-plugin` installs the packed plugin into a clean consumer project and resolves FlatMachines dependencies from npm, matching the global OpenCode npm-plugin path.
-
-The package `prepublishOnly` script runs build, typecheck, and `verify:opencode-plugin` automatically.
+`verify:opencode-plugin` installs the packed plugin into a clean consumer project and resolves FlatMachines dependencies from npm, matching OpenCode's package-consumption path without publishing this plugin.

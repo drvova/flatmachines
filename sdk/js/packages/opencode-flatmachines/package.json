@@ -22,8 +22,7 @@
   ],
   "scripts": {
     "build": "tsup",
-    "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build && npm run typecheck && npm --prefix ../.. run verify:opencode-plugin"
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "opencode",
@@ -38,9 +37,6 @@
   "engines": {
     "node": ">=20",
     "opencode": ">=1.15.13"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "dependencies": {
     "@memgrafter/flatmachines": "^4.0.1",

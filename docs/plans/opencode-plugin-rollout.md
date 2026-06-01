@@ -20,15 +20,14 @@
 - Map `wait_for` outputs into OpenCode tool metadata so waiting machines are obvious in the TUI.
 - Add examples for SQLite persistence and file triggers.
 
-## Slice 4: Ecosystem Submission
+## Slice 4: Global Local Install
 
-- Prepare npm package metadata, README, and release checklist.
-- Add compatibility guidance for OpenCode versions using `engines.opencode`.
-- Keep plugin dependencies on a published-compatible FlatMachines range, then publish lockstep JS packages when new FlatMachines runtime features are required.
-- Submit the plugin to the OpenCode ecosystem list after the package is published and install-verified.
+- Prepare a global local setup command for `~/.config/opencode`.
+- Preserve existing OpenCode plugin config while adding `flatmachines.ts`.
+- Verify the setup command against an isolated `OPENCODE_CONFIG_DIR`.
 
-## Slice 5: Post-Listing Hardening
+## Slice 5: Post-Install Hardening
 
-- Add dispatcher/resume tools after OpenCode global install and ecosystem listing are verified.
+- Add dispatcher/resume tools after OpenCode global install is verified.
 - Add a compatibility matrix for OpenCode, Node, FlatMachines, and SQLite signaling.
 - Add live OpenCode CLI verification when a local `opencode` binary is available.
