@@ -10,7 +10,11 @@
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "../..",
+    "baseUrl": "../..",
+    "paths": {
+      "@memgrafter/flatagents": ["packages/flatagents/src/index.ts"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

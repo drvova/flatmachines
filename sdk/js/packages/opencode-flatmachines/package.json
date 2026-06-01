@@ -1,0 +1,52 @@
+{
+  "name": "@memgrafter/opencode-flatmachines",
+  "version": "4.1.0",
+  "description": "OpenCode plugin that exposes FlatMachines validation and execution as native tools",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/index.d.mts",
+        "require": "./dist/index.d.ts"
+      },
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "opencode",
+    "plugin",
+    "flatmachines",
+    "orchestration",
+    "agents"
+  ],
+  "author": "memgrafter@gmail.com",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20",
+    "opencode": ">=1.15.13"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@memgrafter/flatmachines": "4.1.0",
+    "@opencode-ai/plugin": "^1.15.13",
+    "yaml": "^2.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.8",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0"
+  }
+}

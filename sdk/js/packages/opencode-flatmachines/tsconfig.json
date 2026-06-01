@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "../..",
+    "moduleResolution": "bundler",
+    "rootDir": "../..",
+    "outDir": "dist",
+    "paths": {
+      "@memgrafter/flatagents": ["packages/flatagents/src/index.ts"],
+      "@memgrafter/flatmachines": ["packages/flatmachines/src/index.ts"]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

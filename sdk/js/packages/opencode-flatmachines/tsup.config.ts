@@ -1,0 +1,14 @@
+import { defineConfig } from 'tsup';
+
+export default defineConfig({
+  entry: ['src/index.ts'],
+  format: ['cjs', 'esm'],
+  dts: true,
+  clean: true,
+  platform: 'node',
+  external: [
+    '@memgrafter/flatmachines',
+    '@opencode-ai/plugin',
+    'yaml',
+  ],
+});

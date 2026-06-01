@@ -5,7 +5,8 @@
   "description": "JavaScript SDK workspace for FlatAgents and FlatMachines",
   "workspaces": [
     "packages/flatagents",
-    "packages/flatmachines"
+    "packages/flatmachines",
+    "packages/opencode-flatmachines"
   ],
   "scripts": {
     "build": "npm run build --workspaces",
