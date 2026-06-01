@@ -55,8 +55,9 @@ class TestSqliteBackendInitialization:
         assert isinstance(machine.persistence, SQLiteCheckpointBackend)
         assert machine.persistence.db_path == str((tmp_path / "state.db").resolve())
 
-    def test_persistence_config_sqlite_default_db_path(self):
+    def test_persistence_config_sqlite_default_db_path(self, tmp_path, monkeypatch):
         """When db_path is omitted, a sensible default is used."""
+        monkeypatch.chdir(tmp_path)
         config = _minimal_machine_config({
             "enabled": True,
             "backend": "sqlite",
