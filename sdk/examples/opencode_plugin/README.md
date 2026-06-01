@@ -22,6 +22,8 @@ After the package is published, add this to `~/.config/opencode/opencode.json`:
 
 Start OpenCode from this directory and ask it to run `flatmachine_validate`, then `flatmachine_run`.
 
+The plugin also exposes `flatmachine_signal` for `wait_for` workflows. Use the same SQLite `signalDbPath` for `flatmachine_signal` and `flatmachine_run` so a waiting machine can consume the signal.
+
 ## Local workspace config
 
 For local development before npm publishing, this example uses `.opencode/plugins/flatmachines.ts` as a shim and `.opencode/package.json` to point at the workspace package.

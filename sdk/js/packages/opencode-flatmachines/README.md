@@ -46,6 +46,7 @@ Then add `.opencode/package.json`:
 
 - `flatmachine_validate`: validates a FlatMachine YAML or JSON config.
 - `flatmachine_run`: validates and executes a FlatMachine config with JSON input.
+- `flatmachine_signal`: sends a FlatMachines signal through a memory or SQLite backend and optionally notifies a trigger.
 
 Relative config paths resolve from the current OpenCode worktree. By default, the plugin rejects paths outside the worktree.
 
@@ -64,6 +65,31 @@ Relative config paths resolve from the current OpenCode worktree. By default, th
       }
     ]
   ]
+}
+```
+
+## Waiting Workflows
+
+Use `flatmachine_signal` with a SQLite backend to wake workflows that use `wait_for` channels. The signal database path must match the `signalDbPath` used by `flatmachine_run`. SQLite signaling uses FlatMachines' `node:sqlite` backend and needs a compatible runtime; plain validation and final-only runs do not need it.
+
+```json
+{
+  "channel": "approval/task-1",
+  "data": { "approved": true },
+  "signalBackend": "sqlite",
+  "signalDbPath": "flatmachines.sqlite",
+  "triggerBackend": "none"
+}
+```
+
+Then run the waiting machine with:
+
+```json
+{
+  "configPath": "machine.yml",
+  "input": { "task_id": "task-1" },
+  "signalBackend": "sqlite",
+  "signalDbPath": "flatmachines.sqlite"
 }
 ```
 

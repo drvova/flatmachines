@@ -1,6 +1,6 @@
 import type { Plugin, PluginModule, PluginOptions, ToolContext } from '@opencode-ai/plugin';
 import { tool } from '@opencode-ai/plugin';
-import { FlatMachine, validateFlatMachineConfig } from '@memgrafter/flatmachines';
+import { FlatMachine, createSignalBackend, createTriggerBackend, sendAndNotify, validateFlatMachineConfig } from '@memgrafter/flatmachines';
 import { readFile } from 'node:fs/promises';
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { parse as parseYaml } from 'yaml';
@@ -12,6 +12,8 @@ type FlatMachinesPluginOptions = {
 };
 
 type PathContext = Pick<ToolContext, 'directory' | 'worktree'>;
+const signalBackends = ['memory', 'sqlite'] as const;
+const triggerBackends = ['none', 'file', 'socket'] as const;
 
 function stringOption(options: PluginOptions | undefined, key: string): string | undefined {
   const value = options?.[key];
@@ -76,6 +78,21 @@ function configPath(inputPath: string | undefined, options: FlatMachinesPluginOp
   return path;
 }
 
+function signalBackendOptions(dbPath: string | undefined, context: PathContext, options: FlatMachinesPluginOptions) {
+  return dbPath ? { db_path: resolveWorkspacePath(dbPath, context, options) } : undefined;
+}
+
+function triggerBackendOptions(
+  args: { triggerBasePath?: string; triggerSocketPath?: string },
+  context: PathContext,
+  options: FlatMachinesPluginOptions,
+) {
+  return {
+    base_path: args.triggerBasePath ? resolveWorkspacePath(args.triggerBasePath, context, options) : undefined,
+    socket_path: args.triggerSocketPath ? resolveWorkspacePath(args.triggerSocketPath, context, options) : undefined,
+  };
+}
+
 function jsonOutput(title: string, value: unknown, metadata?: Record<string, unknown>) {
   return {
     title,
@@ -116,6 +133,8 @@ export const FlatMachinesPlugin: Plugin = async (_ctx, rawOptions) => {
           input: tool.schema.record(tool.schema.string(), tool.schema.unknown()).optional(),
           executionId: tool.schema.string().optional(),
           profilesFile: tool.schema.string().optional(),
+          signalBackend: tool.schema.enum(signalBackends).optional(),
+          signalDbPath: tool.schema.string().optional(),
         },
         async execute(args, context) {
           const absoluteConfigPath = resolveWorkspacePath(configPath(args.configPath, options), context, options);
@@ -131,6 +150,9 @@ export const FlatMachinesPlugin: Plugin = async (_ctx, rawOptions) => {
             configDir: dirname(absoluteConfigPath),
             executionId: args.executionId,
             profilesFile: profilesPath ? resolveWorkspacePath(profilesPath, context, options) : undefined,
+            signalBackend: args.signalBackend
+              ? createSignalBackend(args.signalBackend, signalBackendOptions(args.signalDbPath, context, options))
+              : undefined,
           });
 
           const result = await machine.execute(args.input ?? {});
@@ -144,6 +166,43 @@ export const FlatMachinesPlugin: Plugin = async (_ctx, rawOptions) => {
             {
               executionId: machine.executionId,
               waiting: Boolean(result?._waiting),
+            },
+          );
+        },
+      }),
+
+      flatmachine_signal: tool({
+        description: 'Send a FlatMachines signal and notify an optional trigger backend.',
+        args: {
+          channel: tool.schema.string(),
+          data: tool.schema.record(tool.schema.string(), tool.schema.unknown()).optional(),
+          signalBackend: tool.schema.enum(signalBackends).default('memory'),
+          signalDbPath: tool.schema.string().optional(),
+          triggerBackend: tool.schema.enum(triggerBackends).default('none'),
+          triggerBasePath: tool.schema.string().optional(),
+          triggerSocketPath: tool.schema.string().optional(),
+        },
+        async execute(args, context) {
+          const signalBackend = createSignalBackend(
+            args.signalBackend,
+            signalBackendOptions(args.signalDbPath, context, options),
+          );
+          const triggerBackend = createTriggerBackend(
+            args.triggerBackend,
+            triggerBackendOptions(args, context, options),
+          );
+          const signalId = await sendAndNotify(signalBackend, triggerBackend, args.channel, args.data ?? {});
+          return jsonOutput(
+            'FlatMachine signal sent',
+            {
+              signalId,
+              channel: args.channel,
+              backend: args.signalBackend,
+              trigger: args.triggerBackend,
+            },
+            {
+              signalId,
+              channel: args.channel,
             },
           );
         },

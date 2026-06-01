@@ -15,6 +15,30 @@ data:
         ok: true
 `;
 
+const waitForMachine = `
+spec: flatmachine
+spec_version: "4.1.0"
+data:
+  states:
+    wait:
+      type: initial
+      wait_for: "approval/{{ input.task_id }}"
+      output_to_context:
+        approved: "{{ output.approved }}"
+      transitions:
+        - condition: 'context.approved == "True"'
+          to: done
+        - to: rejected
+    done:
+      type: final
+      output:
+        approved: true
+    rejected:
+      type: final
+      output:
+        approved: false
+`;
+
 async function workspace() {
   return mkdtemp(join(tmpdir(), 'flatmachines-opencode-'));
 }
@@ -69,5 +93,27 @@ describe('@memgrafter/opencode-flatmachines', () => {
     const hooks = await FlatMachinesPlugin({ directory: root, worktree: root } as any);
     const result = await hooks.tool!.flatmachine_run.execute({ configPath: 'machine.yml', input: {} }, toolContext(root));
     expect(JSON.parse((result as { output: string }).output).result).toEqual({ ok: true });
+  });
+
+  it('sends SQLite-backed signals that waiting machines consume', async () => {
+    const root = await workspace();
+    await writeFile(join(root, 'machine.yml'), waitForMachine);
+    const hooks = await FlatMachinesPlugin({ directory: root, worktree: root } as any);
+
+    const signal = await hooks.tool!.flatmachine_signal.execute({
+      channel: 'approval/task-1',
+      data: { approved: true },
+      signalBackend: 'sqlite',
+      signalDbPath: 'signals.sqlite',
+    }, toolContext(root));
+    expect(JSON.parse((signal as { output: string }).output).channel).toBe('approval/task-1');
+
+    const result = await hooks.tool!.flatmachine_run.execute({
+      configPath: 'machine.yml',
+      input: { task_id: 'task-1' },
+      signalBackend: 'sqlite',
+      signalDbPath: 'signals.sqlite',
+    }, toolContext(root));
+    expect(JSON.parse((result as { output: string }).output).result).toEqual({ approved: true });
   });
 });

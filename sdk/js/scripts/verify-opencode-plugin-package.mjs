@@ -77,8 +77,13 @@ const payload = JSON.parse(run.output);
 if (validate.metadata.valid !== true || payload.result.ok !== true) {
   throw new Error('OpenCode plugin package smoke failed');
 }
+await hooks.tool.flatmachine_signal.execute({
+  channel: 'approval/task-1',
+  data: { approved: true },
+  signalBackend: 'memory',
+}, context);
 const flatmachinesPkg = JSON.parse(await readFile('node_modules/@memgrafter/flatmachines/package.json', 'utf8'));
-console.log(JSON.stringify({ valid: validate.metadata.valid, result: payload.result, flatmachines: flatmachinesPkg.version }));
+console.log(JSON.stringify({ valid: validate.metadata.valid, result: payload.result, signal: true, flatmachines: flatmachinesPkg.version }));
 `);
 
 const output = await exec('node', ['verify.mjs'], { cwd: installDir });
