@@ -16,7 +16,8 @@
     "typecheck:agents": "npm run typecheck -w packages/flatagents",
     "typecheck:machines": "npm run typecheck -w packages/flatmachines",
     "test": "vitest run",
-    "dev": "npm run build --workspaces -- --watch"
+    "dev": "npm run build --workspaces -- --watch",
+    "verify:opencode-plugin": "node scripts/verify-opencode-plugin-package.mjs"
   },
   "author": "memgrafter@gmail.com",
   "license": "MIT",

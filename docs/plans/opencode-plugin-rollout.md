@@ -12,6 +12,7 @@
 - Document npm config usage for `opencode.json`.
 - Document local plugin usage through `.opencode/plugins/` and global usage through `~/.config/opencode/plugins/`.
 - Include a minimal runnable FlatMachine example that finishes without provider credentials.
+- Verify package loading from local tarballs so unpublished workspace packages do not hide npm install defects.
 
 ## Slice 3: Runtime Operations
 
@@ -23,4 +24,5 @@
 
 - Prepare npm package metadata, README, and release checklist.
 - Add compatibility guidance for OpenCode versions using `engines.opencode`.
+- Publish lockstep JS packages first because npm global use cannot resolve unpublished `@memgrafter/flatagents` or `@memgrafter/flatmachines` versions.
 - Submit the plugin to the OpenCode ecosystem list after the package is published and install-verified.

@@ -1,0 +1,9 @@
+spec: flatmachine
+spec_version: "4.1.0"
+data:
+  states:
+    done:
+      type: final
+      output:
+        ok: true
+        message: "FlatMachines is available inside OpenCode."
