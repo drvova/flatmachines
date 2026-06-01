@@ -69,7 +69,9 @@ Relative config paths resolve from the current OpenCode worktree. By default, th
 
 ## Release Gate
 
-The plugin package depends on the matching FlatMachines JavaScript package version. Publish order for a global npm release:
+The plugin package intentionally depends on the latest published FlatMachines major range so a global OpenCode install can resolve dependencies from npm without waiting for every workspace package to be published in the same release.
+
+Publish order for a lockstep release remains:
 
 1. `@memgrafter/flatagents`
 2. `@memgrafter/flatmachines`
@@ -82,3 +84,5 @@ npm run build
 npm run typecheck
 npm run verify:opencode-plugin
 ```
+
+`verify:opencode-plugin` installs the packed plugin into a clean consumer project and resolves FlatMachines dependencies from npm, matching the global OpenCode npm-plugin path.

@@ -6,6 +6,7 @@
 
 ## Self-Improvement Ledger
 
+- 2026-06-01 — Seam: OpenCode plugin global npm verification relied on local FlatAgents/FlatMachines tarballs; root cause: the verifier did not exercise registry dependency resolution, so unpublished local versions could mask global install failures; canonical fix: depend on published-compatible `@memgrafter/flatmachines` range and install only the packed plugin into a clean consumer project; validation: `npm run verify:opencode-plugin`.
 - 2026-06-01 — Seam: global npm install readiness check for `@memgrafter/opencode-flatmachines` failed; root cause: plugin dependency versions `@memgrafter/flatagents@4.1.0` and `@memgrafter/flatmachines@4.1.0` are not published yet; canonical fix: document lockstep publish order and add a local-tarball package verifier that installs all three packages into a clean consumer project; validation: `npm run verify:opencode-plugin`.
 - 2026-06-01 — Seam: clean JS workspace plugin validation (`npm run typecheck`, `npm run build`, focused Vitest) failed; root cause: the new OpenCode plugin inherited excludes that removed its own sources, used legacy module resolution for OpenCode exports, and existing workspace imports depended on missing built `dist` typings; canonical fix: package-level bundler resolution, source path aliases for local workspaces, and Vitest aliases for `@memgrafter/*`; validation: `npm run typecheck`, `npm run build`, and `npx vitest run tests/unit/opencode-plugin.test.ts`.
 

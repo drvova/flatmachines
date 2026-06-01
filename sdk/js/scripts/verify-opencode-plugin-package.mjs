@@ -29,13 +29,11 @@ const temp = await mkdtemp(join(tmpdir(), 'flatmachines-opencode-package-'));
 const installDir = join(temp, 'consumer');
 await run('npm', ['run', 'build']);
 
-const flatagents = await pack('packages/flatagents', temp);
-const flatmachines = await pack('packages/flatmachines', temp);
 const plugin = await pack('packages/opencode-flatmachines', temp);
 
 await mkdir(installDir, { recursive: true });
 await run('npm', ['init', '-y'], { cwd: installDir });
-await run('npm', ['install', flatagents, flatmachines, plugin], { cwd: installDir });
+await run('npm', ['install', plugin], { cwd: installDir });
 
 const machinePath = join(installDir, 'machine.yml');
 await writeFile(machinePath, `spec: flatmachine
@@ -50,6 +48,7 @@ data:
 
 await writeFile(join(installDir, 'verify.mjs'), `
 import plugin from '@memgrafter/opencode-flatmachines';
+import { readFile } from 'node:fs/promises';
 
 const context = {
   sessionID: 'session',
@@ -78,7 +77,8 @@ const payload = JSON.parse(run.output);
 if (validate.metadata.valid !== true || payload.result.ok !== true) {
   throw new Error('OpenCode plugin package smoke failed');
 }
-console.log(JSON.stringify({ valid: validate.metadata.valid, result: payload.result }));
+const flatmachinesPkg = JSON.parse(await readFile('node_modules/@memgrafter/flatmachines/package.json', 'utf8'));
+console.log(JSON.stringify({ valid: validate.metadata.valid, result: payload.result, flatmachines: flatmachinesPkg.version }));
 `);
 
 const output = await exec('node', ['verify.mjs'], { cwd: installDir });
