@@ -73,6 +73,8 @@ export interface ExtendedMachineOptions extends MachineOptions {
   agentRegistry?: AgentAdapterRegistry;
   toolProvider?: ToolProvider;
   configStore?: ConfigStore;
+  /** Effective inherited machine launch depth limit. */
+  maxDepth?: number;
   /** @deprecated Use configStore */
   config_store?: ConfigStore;
 }
@@ -97,6 +99,8 @@ export class FlatMachine {
   private profilesFile?: string;
   private checkpointEvents = new Set<string>();
   private parentExecutionId?: string;
+  private depth: number;
+  private maxDepth?: number;
   private pendingLaunches: LaunchIntent[] = [];
   private currentState?: string;
   private currentStep = 0;
@@ -141,13 +145,16 @@ export class FlatMachine {
     }
     this.executionId = options.executionId ?? this.executionId;
     this.parentExecutionId = options.parentExecutionId;
+    // Depth: starts at 0 for root, set by parent for children.
+    this.depth = options.depth ?? 0;
+    const extOpts = options as ExtendedMachineOptions;
+    this.maxDepth = this.config.data.settings?.max_depth ?? extOpts.maxDepth;
 
     const backendConfig = this.config.data.settings?.backends;
     this.resultBackend = options.resultBackend ?? this.createResultBackend(backendConfig);
     this.executionLock = options.executionLock ?? this.createExecutionLock(backendConfig);
 
     // New backends
-    const extOpts = options as ExtendedMachineOptions;
     this.signalBackend = extOpts.signalBackend;
     this.triggerBackend = extOpts.triggerBackend ?? new NoOpTrigger();
     this.toolProvider = extOpts.toolProvider;
@@ -301,6 +308,7 @@ export class FlatMachine {
       this.executionId = resumeSnapshot.execution_id;
       this.parentExecutionId = resumeSnapshot.parent_execution_id;
       this.context = resumeSnapshot.context;
+      this.depth = resumeSnapshot.depth ?? resumeSnapshot.context?.machine?.depth ?? this.depth;
       state = resumeSnapshot.current_state;
       steps = resumeSnapshot.step;
       this.pendingLaunches = resumeSnapshot.pending_launches ?? [];
@@ -321,6 +329,11 @@ export class FlatMachine {
     }
 
     const maxSteps = this.config.data.settings?.max_steps ?? 100;
+    if (this.maxDepth !== undefined && this.depth > this.maxDepth) {
+      throw new Error(
+        `Machine depth limit exceeded: depth=${this.depth} > max_depth=${this.maxDepth}`,
+      );
+    }
 
     while (steps++ < maxSteps) {
       const def = this.config.data.states[state]!;
@@ -439,6 +452,7 @@ export class FlatMachine {
       parentExecutionId: this.parentExecutionId,
       totalApiCalls: this.totalApiCalls,
       totalCost: this.totalCost,
+      depth: this.depth,
     });
   }
 
@@ -1006,6 +1020,7 @@ export class FlatMachine {
       parent_execution_id: this.parentExecutionId,
       pending_launches: this.pendingLaunches.length ? this.pendingLaunches : undefined,
       config_hash: this._config_hash,
+      depth: this.depth,
     };
     await this.checkpointManager.checkpoint(snapshot);
     if (this.lifecycleHooks?.onCheckpoint) {
@@ -1105,6 +1120,8 @@ export class FlatMachine {
       hooksRegistry: this._hooksRegistry,
       executionId: overrides?.executionId,
       parentExecutionId: overrides?.parentExecutionId,
+      depth: this.depth + 1,
+      maxDepth: this.maxDepth,
       profilesFile: this.profilesFile,
       signalBackend: this.signalBackend,
       triggerBackend: this.triggerBackend,
@@ -1248,6 +1265,7 @@ export class FlatMachine {
   }
 
   private async invokeMachineSingle(machineRef: any, input: Record<string, any>, timeoutMs?: number): Promise<any> {
+    this.assertCanLaunchChild();
     const childId = randomUUID();
     const machineName = this.getMachineName(machineRef);
     await this.addPendingLaunch(childId, machineName, input);
@@ -1281,6 +1299,7 @@ export class FlatMachine {
   }
 
   private async launchFireAndForget(machineRef: any, input: Record<string, any>): Promise<void> {
+    this.assertCanLaunchChild();
     const childId = randomUUID();
     const machineName = this.getMachineName(machineRef);
     await this.addPendingLaunch(childId, machineName, input);
@@ -1289,6 +1308,15 @@ export class FlatMachine {
     launchPromise
       .then(() => this.clearPendingLaunch(childId))
       .catch(() => {});
+  }
+
+  private assertCanLaunchChild(): void {
+    const childDepth = this.depth + 1;
+    if (this.maxDepth !== undefined && childDepth > this.maxDepth) {
+      throw new Error(
+        `Machine depth limit exceeded: depth=${childDepth} > max_depth=${this.maxDepth}`,
+      );
+    }
   }
 
   private async awaitWithMode<T>(tasks: Promise<T>[], mode: string, timeoutMs?: number): Promise<T | T[]> {

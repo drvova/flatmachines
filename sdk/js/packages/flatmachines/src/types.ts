@@ -28,7 +28,7 @@ export interface MachineConfig {
     agents?: Record<string, string | Record<string, any>>;
     machines?: Record<string, string | MachineConfig | MachineWrapper | MachineReference>;
     states: Record<string, State>;
-    settings?: { max_steps?: number; backends?: BackendConfig; [key: string]: any };
+    settings?: { max_steps?: number; max_depth?: number; backends?: BackendConfig; [key: string]: any };
     persistence?: { enabled: boolean; backend: "local" | "memory" | "redis" | string; checkpoint_on?: string[]; db_path?: string; [key: string]: any };
   };
 }
@@ -78,6 +78,8 @@ export interface MachineSnapshot {
   tool_loop_state?: Record<string, any>;
   // Config hash (v2.1.0) — content-addressed key into config store for cross-SDK resume
   config_hash?: string;
+  // Current nesting depth (root = 0). Used to preserve max_depth enforcement across resume.
+  depth?: number;
 }
 
 // Matches flatmachine.d.ts:326-331
@@ -124,6 +126,7 @@ export interface PersistenceBackend {
   list(prefix: string): Promise<string[]>;
   listExecutionIds?(options?: { event?: string; waiting_channel?: string }): Promise<string[]>;
   deleteExecution?(executionId: string): Promise<void>;
+  prune?(opts: { max_age_seconds?: number; max_count?: number }): Promise<number>;
 }
 
 export interface ResultBackend {
@@ -155,6 +158,8 @@ export interface MachineOptions {
   executionId?: string;
   parentExecutionId?: string;
   profilesFile?: string;
+  /** Nesting depth (root=0). Set automatically by parent when creating child machines. */
+  depth?: number;
 }
 
 export interface MachineInput {

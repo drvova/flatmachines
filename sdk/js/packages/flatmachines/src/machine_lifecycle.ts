@@ -33,6 +33,7 @@ export function buildCheckpointSnapshot(opts: {
   parentExecutionId?: string;
   pendingLaunches?: LaunchIntent[];
   configHash?: string;
+  depth?: number;
   waitingChannel?: string;
   toolLoopState?: Record<string, any>;
 }): MachineSnapshot {
@@ -50,6 +51,7 @@ export function buildCheckpointSnapshot(opts: {
     total_cost: opts.totalCost,
     parent_execution_id: opts.parentExecutionId,
     config_hash: opts.configHash,
+    depth: opts.depth,
   };
 
   if (opts.pendingLaunches?.length) {
@@ -79,6 +81,7 @@ export function injectMachineMetadata(
     parentExecutionId?: string;
     totalApiCalls: number;
     totalCost: number;
+    depth?: number;
   },
 ): void {
   context.machine = Object.freeze({
@@ -90,6 +93,7 @@ export function injectMachineMetadata(
     parent_execution_id: opts.parentExecutionId ?? null,
     total_api_calls: opts.totalApiCalls,
     total_cost: opts.totalCost,
+    depth: opts.depth,
   });
 }
 
