@@ -134,7 +134,8 @@ export class FlatAgent {
         this.llmBackend = new VercelAIBackend({
           provider: this.resolvedModelConfig.provider ?? 'openai',
           name: this.resolvedModelConfig.name,
-          baseURL: this.resolvedModelConfig.base_url,
+          apiKey: this.resolvedModelConfig.api_key ?? this.resolvedModelConfig.apiKey,
+          baseURL: this.resolvedModelConfig.base_url ?? this.resolvedModelConfig.baseURL,
         });
       }
     }
