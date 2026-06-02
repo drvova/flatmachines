@@ -7,8 +7,7 @@ export default defineConfig({
   clean: true,
   platform: 'node',
   external: [
-    '@memgrafter/flatmachines',
     '@opencode-ai/plugin',
-    'yaml',
   ],
+  noExternal: [/(.*)/],
 });

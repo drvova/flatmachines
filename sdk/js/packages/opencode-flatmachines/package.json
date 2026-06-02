@@ -2,17 +2,15 @@
   "name": "@memgrafter/opencode-flatmachines",
   "version": "4.1.0",
   "description": "OpenCode plugin that exposes FlatMachines validation and execution as native tools",
+  "type": "module",
   "main": "dist/index.js",
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "types": {
-        "import": "./dist/index.d.mts",
-        "require": "./dist/index.d.ts"
-      },
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "files": [
