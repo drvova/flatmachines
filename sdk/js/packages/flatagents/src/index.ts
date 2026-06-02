@@ -2,7 +2,8 @@
 // Core
 // ─────────────────────────────────────────────────────────────────────────────
 
-export { FlatAgent, AgentOptions } from './flatagent';
+export { FlatAgent } from './flatagent';
+export type { AgentOptions } from './flatagent';
 export { ProfileManager, resolveModelConfig } from './profiles';
 
 // ─────────────────────────────────────────────────────────────────────────────

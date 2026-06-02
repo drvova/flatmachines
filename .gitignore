@@ -24,3 +24,4 @@ auth.json
 .speed-kills/state.db
 .speed-kills/state.db-shm
 .speed-kills/state.db-wal
+sdk/js/flatmachines.sqlite*
