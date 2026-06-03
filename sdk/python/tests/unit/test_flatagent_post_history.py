@@ -193,3 +193,46 @@ async def test_post_history_appends_to_multimodal_final_user_message_without_mut
         {"type": "text", "text": "\n\nSystem:\n\nVision reminder."},
     ]
     assert captured["messages"][-1]["content"] is not content
+
+
+@pytest.mark.asyncio
+async def test_post_history_can_reference_context_variable() -> None:
+    """post_history_instructions template can use {{ context.* }} for data that persists across turns."""
+    agent = _make_agent(_agent_config(post_history="Role: {{ context.current_role | default('none') }}."))
+    chain = [
+        {"role": "user", "content": "Initial request"},
+        {"role": "assistant", "content": "ok"},
+    ]
+    captured = {}
+
+    async def _fake_call_llm(params):
+        captured["messages"] = params["messages"]
+        return _fake_response()
+
+    agent._call_llm = _fake_call_llm  # type: ignore[method-assign]
+
+    await agent.call(messages=chain, context={"current_role": "agentic_coder"})
+
+    # Chain ends with assistant → post_history synthesizes a user message
+    assert captured["messages"][-1] == {
+        "role": "user",
+        "content": "System:\n\nRole: agentic_coder.",
+    }
+
+
+@pytest.mark.asyncio
+async def test_post_history_context_defaults_to_empty_dict_when_not_provided() -> None:
+    """When context is None, post_history_instructions still renders without error."""
+    agent = _make_agent(_agent_config(post_history="Fallback: {{ context.fallback | default('unset') }}."))
+    captured = {}
+
+    async def _fake_call_llm(params):
+        captured["messages"] = params["messages"]
+        return _fake_response()
+
+    agent._call_llm = _fake_call_llm  # type: ignore[method-assign]
+
+    # No context kwarg — simulates a standalone call
+    result = await agent.call(name="Alice")
+
+    assert "Fallback: unset." in captured["messages"][-1]["content"]
